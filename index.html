@@ -1135,6 +1135,13 @@
     </section>
 
     <div class="footer-strip">★ Press Your Luck. Race to 200! • Win chance is an estimate ★</div>
+
+    <section class="initialize-game-section">
+      <button id="initializeGameBtn" class="danger-btn initialize-game-btn" type="button">
+        INITIALIZE GAME
+      </button>
+    </section>
+
   </main>
 
   <script>
@@ -1186,6 +1193,7 @@
         addPlayerBtn:document.getElementById("addPlayerBtn"),
         saveRoundBtn:document.getElementById("saveRoundBtn"),
         resetBtn:document.getElementById("resetBtn"),
+        initializeGameBtn:document.getElementById("initializeGameBtn"),
         soundBtn:document.getElementById("soundBtn"),
         soundStatus:document.getElementById("soundStatus"),
         leadChangePopup:document.getElementById("leadChangePopup"),
@@ -1658,6 +1666,14 @@
         render(changed);
       }
 
+      function initializeGame(){
+        if(!confirm("Initialize game? This will remove ALL players and clear all scores."))return;
+        clearScoreInputs();
+        state.players=[];
+        els.leadMessage.textContent="Game initialized. Add at least 2 players to begin.";
+        render();
+      }
+
       function resetGame(){
         if(!confirm("Reset all scores and start a new game?"))return;
         clearScoreInputs();
@@ -1672,6 +1688,7 @@
       els.addPlayerBtn.addEventListener("click",addPlayer);
       els.newPlayerName.addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer()});
       els.resetBtn.addEventListener("click",resetGame);
+      els.initializeGameBtn.addEventListener("click",initializeGame);
       els.soundBtn.addEventListener("click",()=>{
         soundEnabled=!soundEnabled;
         els.soundStatus.textContent=soundEnabled?"ON":"OFF";
