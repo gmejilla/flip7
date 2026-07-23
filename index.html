@@ -1107,7 +1107,7 @@
 
 
 
-    /* v5.1.0.12: separate victory content and bottom action zones. */
+    /* v5.2.1.0: separate victory content and bottom action zones. */
     .victory-overlay.show{
       display:grid;
       grid-template-rows:minmax(0,1fr) auto;
@@ -1133,6 +1133,26 @@
       display:flex;
       justify-content:center;
       z-index:6;
+    }
+
+  
+    .player-name-field{
+      min-width:0;
+      flex:1;
+    }
+    .player-name-error{
+      display:none;
+      margin-top:7px;
+      color:#b00020;
+      font-size:.88rem;
+      font-weight:900;
+      line-height:1.2;
+    }
+    .player-name-error.show{display:block}
+    #newPlayerName.invalid{
+      border-color:#d7193f;
+      outline:3px solid rgba(215,25,63,.18);
+      background:#fff5f7;
     }
 
   </style>
@@ -1263,7 +1283,13 @@ RETURN TO SCOREBOARD</button>
         </div>
 
         <div class="add-row">
-          <input id="newPlayerName" type="text" maxlength="24" placeholder="New player name" />
+          <div class="player-name-field">
+            <input id="newPlayerName" type="text" maxlength="24" placeholder="New player name"
+                   aria-describedby="playerNameError" aria-invalid="false" />
+            <div id="playerNameError" class="player-name-error" role="alert" aria-live="polite">
+              Player names may only contain letters, numbers, and spaces.
+            </div>
+          </div>
           <button id="addPlayerBtn" class="secondary-btn" type="button">+ ADD</button>
         </div>
       </aside>
@@ -1349,6 +1375,7 @@ RETURN TO SCOREBOARD</button>
         historyBody:document.getElementById("historyBody"),
         leadMessage:document.getElementById("leadMessage"),
         newPlayerName:document.getElementById("newPlayerName"),
+        playerNameError:document.getElementById("playerNameError"),
         addPlayerBtn:document.getElementById("addPlayerBtn"),
         saveRoundBtn:document.getElementById("saveRoundBtn"),
         resetBtn:document.getElementById("resetBtn"),
@@ -1908,12 +1935,38 @@ RETURN TO SCOREBOARD</button>
         saveState();
       }
 
+
+      const PLAYER_NAME_PATTERN = /^[A-Za-z0-9 ]*$/;
+
+      function showPlayerNameError(){
+        els.newPlayerName.classList.add("invalid");
+        els.newPlayerName.setAttribute("aria-invalid","true");
+        els.playerNameError.classList.add("show");
+      }
+
+      function clearPlayerNameError(){
+        els.newPlayerName.classList.remove("invalid");
+        els.newPlayerName.setAttribute("aria-invalid","false");
+        els.playerNameError.classList.remove("show");
+      }
+
+      function isValidPlayerName(value){
+        return PLAYER_NAME_PATTERN.test(value);
+      }
+
       function addPlayer(){
-        const name=els.newPlayerName.value.trim();
-        if(!name){els.leadMessage.textContent="Enter a player name first.";return}
+        const rawName=els.newPlayerName.value;
+        if(!isValidPlayerName(rawName)){
+          showPlayerNameError();
+          els.newPlayerName.focus();
+          return;
+        }
+        const name=rawName.trim();
+        if(!name){clearPlayerNameError();els.leadMessage.textContent="Enter a player name first.";return}
         if(state.players.length>=12){els.leadMessage.textContent="Maximum 12 players.";return}
         state.players.push({id:state.nextId++,name,scores:Array(completedRounds()).fill(0)});
         els.newPlayerName.value="";
+        clearPlayerNameError();
         els.leadMessage.textContent=`${name} joined the game!`;
         playSaveSound();
         render();
@@ -2033,6 +2086,31 @@ function saveRound(){
 
       els.saveRoundBtn.addEventListener("click",saveRound);
       els.addPlayerBtn.addEventListener("click",addPlayer);
+
+      els.newPlayerName.addEventListener("beforeinput",e=>{
+        if(e.inputType.startsWith("delete"))return;
+        if(e.data && !PLAYER_NAME_PATTERN.test(e.data)){
+          e.preventDefault();
+          showPlayerNameError();
+        }
+      });
+
+      els.newPlayerName.addEventListener("paste",e=>{
+        const pasted=(e.clipboardData||window.clipboardData).getData("text");
+        if(!PLAYER_NAME_PATTERN.test(pasted)){
+          e.preventDefault();
+          showPlayerNameError();
+        }
+      });
+
+      els.newPlayerName.addEventListener("input",()=>{
+        if(isValidPlayerName(els.newPlayerName.value)){
+          clearPlayerNameError();
+        }else{
+          showPlayerNameError();
+        }
+      });
+
       els.newPlayerName.addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer()});
       els.resetBtn.addEventListener("click",resetGame);
       els.initializeGameBtn.addEventListener("click",initializeGame);
@@ -2049,7 +2127,7 @@ const winners=eligibleWinners.filter(p=>total(p)===highestWinningScore);
       document.addEventListener("keydown",e=>{if(e.key==="Escape")closeVictory()});
       applyInitializeGameState();
     })();
-  </script>
+</script>
 </body>
 </html>
 
