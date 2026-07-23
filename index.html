@@ -618,6 +618,7 @@
         linear-gradient(110deg,rgba(255,244,144,.95),rgba(255,255,255,.95),rgba(190,245,255,.92),rgba(255,210,241,.92));
       background-size:260% 100%;
       animation:holoDrift 4s linear infinite;
+      animation-delay:var(--player-animation-delay,0s);
       box-shadow:0 0 0 3px rgba(255,210,31,.25),0 7px 18px rgba(79,22,147,.18);
     }
     .standing-row.lead-change{
@@ -626,6 +627,7 @@
       margin:0;
       transform:none;
       animation:leaderFlash .7s ease,holoDrift 4s linear infinite;
+      animation-delay:0s,var(--player-animation-delay,0s);
     }
     @keyframes leaderFlash{
       0%,100%{filter:brightness(1)}
@@ -643,6 +645,7 @@
       background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 48%,transparent 61%);
       transform:translateX(-65%) rotate(8deg);
       animation:holoSweep 2.8s ease-in-out infinite;
+      animation-delay:var(--player-sweep-delay,0s);
     }
     @keyframes holoSweep{
       0%,25%{transform:translateX(-65%) rotate(8deg)}
@@ -716,6 +719,7 @@
       background:linear-gradient(90deg,#13b9ef,#6554e8,#ef3e8a,#ff7b00,#ffd21f,#22bd67,#13b9ef);
       background-size:300% 100%;
       animation:rainbowFlow 3.2s linear infinite;
+      animation-delay:var(--player-animation-delay,0s);
       transition:width .55s cubic-bezier(.2,.8,.2,1);
       box-shadow:inset 0 0 0 2px rgba(0,0,0,.18);
     }
@@ -1375,8 +1379,12 @@
           const won=score>=WINNING_SCORE;
           const color=COLORS[index%COLORS.length];
           const chance=chances.get(p.id)||1;
+          // Stable per-player offsets keep the color effects out of sync without
+          // changing every time the standings re-render.
+          const animationDelay=-(((p.id*137)%320)/100);
+          const sweepDelay=-(((p.id*211)%280)/100);
           return `
-            <article class="standing-row ${isLeader?"is-leader":""} ${animate&&isLeader?"lead-change":""}" style="color:${color}">
+            <article class="standing-row ${isLeader?"is-leader":""} ${animate&&isLeader?"lead-change":""}" style="color:${color};--player-animation-delay:${animationDelay}s;--player-sweep-delay:${sweepDelay}s">
               <div class="rank-card rank-card-image">
                 <img src="${RANK_CARD_IMAGES[index+1]}" alt="Flip 7 ${index+1} card">
               </div>
