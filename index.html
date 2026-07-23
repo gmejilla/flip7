@@ -1087,8 +1087,8 @@
       <div class="victory-wins">Wins!</div>
       <div id="victoryScore" class="victory-score">200 Points</div>
       <div class="victory-actions">
-        <button id="replayVictoryBtn" class="save-btn" type="button">Replay Celebration</button>
-        <button id="closeVictoryBtn" class="secondary-btn" type="button">Return to Scoreboard</button>
+        <button id="replayVictoryBtn" class="secondary-btn" type="button">Replay Celebration</button>
+        <button id="closeVictoryBtn" class="save-btn" type="button">Return to Scoreboard</button>
       </div>
     </div>
   </section>
@@ -1624,7 +1624,7 @@
           const progress=Math.max(0,Math.min(100,score/WINNING_SCORE*100));
           const isLeader=score===hi;
           const isLast=score===lo&&r.length>1;
-          const won=score>=WINNING_SCORE;
+          const won=score>=WINNING_SCORE&&score===hi;
           const color=COLORS[index%COLORS.length];
           const chance=chances.get(p.id)||1;
           // Stable per-player offsets keep the color effects out of sync without
@@ -1680,7 +1680,7 @@
               <td style="color:${color}">${esc(p.name).toUpperCase()}</td>
               ${Array.from({length:rounds},(_,i)=>`<td>${p.scores[i]??"—"}</td>`).join("")}
               <td style="color:${color};font-weight:1000">${score}</td>
-              <td>${score>=WINNING_SCORE?"WINNER! 🎉":remaining}</td>
+              <td>${score>=WINNING_SCORE&&score===hi?"WINNER! 🎉":remaining}</td>
             </tr>`;
         }).join("");
       }
@@ -1785,11 +1785,15 @@ function saveRound(){
 
         const after=leaderIds();
         const changed=before.length!==after.length||before.some(id=>!after.includes(id));
-        const winners=state.players.filter(p=>total(p)>=WINNING_SCORE);
+        const eligibleWinners=state.players.filter(p=>total(p)>=WINNING_SCORE);
+        const highestWinningScore=eligibleWinners.length
+          ? Math.max(...eligibleWinners.map(p=>total(p)))
+          : null;
+        const winners=eligibleWinners.filter(p=>total(p)===highestWinningScore);
 
         if(winners.length){
           const names=winners.map(p=>p.name).join(" & ");
-          els.leadMessage.textContent=`🎉 ${names} reached 200 points!`;
+          els.leadMessage.textContent=`CONGRATULATIONS ${names.toUpperCase()}!`;
           playWinnerSound();
           showVictory(winners);
         }else if(changed){
@@ -1838,7 +1842,11 @@ function saveRound(){
       });
       els.closeVictoryBtn.addEventListener("click",closeVictory);
       els.replayVictoryBtn.addEventListener("click",()=>{
-        const winners=state.players.filter(p=>total(p)>=WINNING_SCORE);
+        const eligibleWinners=state.players.filter(p=>total(p)>=WINNING_SCORE);
+const highestWinningScore=eligibleWinners.length
+  ? Math.max(...eligibleWinners.map(p=>total(p)))
+  : null;
+const winners=eligibleWinners.filter(p=>total(p)===highestWinningScore);
         if(winners.length){playWinnerSound();showVictory(winners)}
       });
       els.victoryOverlay.addEventListener("click",e=>{if(e.target===els.victoryOverlay)closeVictory()});
