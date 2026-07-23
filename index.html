@@ -1213,7 +1213,7 @@
       </div>
     </section>
 
-    <div class="footer-strip">★ Press Your Luck. Race to 200! • Win chance is an estimate ★</div>
+    <div class="footer-strip">★ Press Your Luck. Race to 200! ★</div>
 
     <section class="initialize-game-section">
       <button id="initializeGameBtn" class="danger-btn initialize-game-btn" type="button">
@@ -1688,9 +1688,18 @@
       function render(animate=false){
         els.roundMetric.textContent=currentRound();
         els.playerMetric.textContent=state.players.length;
+
         const hasMinimumPlayers=state.players.length>=2;
-        els.saveRoundBtn.disabled=!hasMinimumPlayers;
-        els.saveRoundBtn.title=hasMinimumPlayers?"Save scores for this round":"Add at least 2 players to start the game";
+        const hasWinner=state.players.some(player=>total(player)>=WINNING_SCORE);
+
+        els.saveRoundBtn.disabled=!hasMinimumPlayers||hasWinner;
+        els.saveRoundBtn.textContent=hasWinner?"GAME OVER":"✓ SAVE ROUND";
+        els.saveRoundBtn.title=hasWinner
+          ?"The game is over"
+          :hasMinimumPlayers
+            ?"Save scores for this round"
+            :"Add at least 2 players to start the game";
+
         renderInputs();
         renderStandings(animate);
         renderHistory();
@@ -1744,7 +1753,10 @@
         return missing;
       }
 
-      function saveRound(){
+      
+function saveRound(){
+  if((state.players||[]).some(p=>((p.scores||[]).reduce((a,b)=>a+(+b||0),0))>=200)) return;
+
         if(state.players.length<2){
           els.leadMessage.textContent="Add at least 2 players to start the game.";
           return;
