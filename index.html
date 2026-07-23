@@ -1667,6 +1667,14 @@
         render(changed);
       }
 
+      function initializeGame(){
+        if(!confirm("Initialize game? This will remove ALL players and clear all scores."))return;
+        clearScoreInputs();
+        state.players=[];
+        els.leadMessage.textContent="Game initialized. Add at least 2 players to begin.";
+        render();
+      }
+
       function resetGame(){
         if(!confirm("Reset all scores and start a new game?"))return;
         clearScoreInputs();
