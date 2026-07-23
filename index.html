@@ -1793,7 +1793,7 @@ function saveRound(){
 
         if(winners.length){
           const names=winners.map(p=>p.name).join(" & ");
-          els.leadMessage.textContent=`CONGRATULATIONS ${names.toUpperCase()}!`;
+          els.leadMessage.textContent=`🎉 CONGRATULATIONS ${names.toUpperCase()}! 🎉`;
           playWinnerSound();
           showVictory(winners);
         }else if(changed){
