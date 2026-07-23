@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flip 7 Interactive Leaderboard</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&display=swap');
     :root {
       --navy:#17154b;
       --purple:#4b0b91;
@@ -1456,9 +1455,7 @@
         els.scoreInputs.innerHTML=state.players.map((p,i)=>`
           <div class="score-input-row">
             <div class="score-player-wrap">
-              ${state.players.length>2
-                ? `<button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>`
-                : ""}
+              <button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>
               <div class="score-name" style="color:${COLORS[i%COLORS.length]}">${esc(p.name)}</div>
             </div>
             <input id="score-${p.id}" data-player-id="${p.id}" type="number" inputmode="numeric" autocomplete="off" min="-200" max="999" placeholder="0" />
@@ -1564,9 +1561,17 @@
       function render(animate=false){
         els.roundMetric.textContent=currentRound();
         els.playerMetric.textContent=state.players.length;
+        const hasMinimumPlayers=state.players.length>=2;
+        els.saveRoundBtn.disabled=!hasMinimumPlayers;
+        els.saveRoundBtn.title=hasMinimumPlayers?"Save scores for this round":"Add at least 2 players to start the game";
         renderInputs();
         renderStandings(animate);
         renderHistory();
+        if(state.players.length===0){
+          els.leadMessage.textContent="Add at least 2 players to start the game.";
+        }else if(state.players.length===1){
+          els.leadMessage.textContent="Add 1 more player to start the game.";
+        }
         saveState();
       }
 
@@ -1582,11 +1587,6 @@
       }
 
       function removePlayer(id){
-        if(state.players.length<=2){
-          els.leadMessage.textContent="At least two players are required.";
-          return;
-        }
-
         const player=state.players.find(p=>p.id===id);
         if(!player)return;
 
@@ -1599,6 +1599,10 @@
       }
 
       function saveRound(){
+        if(state.players.length<2){
+          els.leadMessage.textContent="Add at least 2 players to start the game.";
+          return;
+        }
         const inputs=[...els.scoreInputs.querySelectorAll("[data-player-id]")];
         if(inputs.some(i=>i.value.trim()==="")){
           els.leadMessage.textContent="Enter a score for every player before saving.";
