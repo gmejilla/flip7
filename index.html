@@ -1459,7 +1459,17 @@
         els.victoryOverlay.setAttribute("aria-hidden","true");
       }
 
+      let scoreInputRenderToken=0;
+      function clearScoreInputs(){
+        els.scoreInputs.querySelectorAll("[data-player-id]").forEach(input=>{
+          input.value="";
+          input.defaultValue="";
+          input.removeAttribute("value");
+        });
+      }
+
       function renderInputs(){
+        scoreInputRenderToken++;
         els.entryRound.textContent=currentRound();
         els.scoreInputs.innerHTML=state.players.map((p,i)=>`
           <div class="score-input-row">
@@ -1467,8 +1477,11 @@
               <button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>
               <div class="score-name" style="color:${COLORS[i%COLORS.length]}">${esc(p.name)}</div>
             </div>
-            <input id="score-${p.id}" data-player-id="${p.id}" type="number" inputmode="numeric" autocomplete="off" min="-200" max="999" placeholder="0" />
+            <input id="score-${p.id}-${scoreInputRenderToken}" data-player-id="${p.id}" type="number" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" min="-200" max="999" placeholder="0" value="" />
           </div>`).join("");
+
+        clearScoreInputs();
+        requestAnimationFrame(clearScoreInputs);
 
         els.scoreInputs.querySelectorAll("[data-remove-id]").forEach(button=>{
           button.addEventListener("click",()=>removePlayer(Number(button.dataset.removeId)));
@@ -1656,9 +1669,12 @@
 
       function resetGame(){
         if(!confirm("Reset all scores and start a new game?"))return;
+        clearScoreInputs();
         state.players=state.players.map(p=>({...p,scores:[]}));
         els.leadMessage.textContent="Scores cleared. Enter Round 1.";
         render();
+        clearScoreInputs();
+        setTimeout(clearScoreInputs,0);
       }
 
       els.saveRoundBtn.addEventListener("click",saveRound);
