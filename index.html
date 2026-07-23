@@ -1452,7 +1452,7 @@ RETURN TO SCOREBOARD</button>
 
         const ctx=canvas.getContext("2d");
         const particles=[];
-        const colors=["#ffd21f","#ef3e8a","#17c7eb","#7b5cff","#ffffff","#35d06f","#ff7b00"];
+        const colors=["#ffd21f","#ef3e8a","#17c7eb","#7b5cff","#ffffff","#35d06f","#ff7b00","#ff3b30","#00e5ff"];
         let width=0;
         let height=0;
         let frame=0;
@@ -1469,26 +1469,122 @@ RETURN TO SCOREBOARD</button>
           ctx.setTransform(dpr,0,0,dpr,0,0);
         };
 
-        const burst=(x,y)=>{
-          const count=72;
+        const addParticle=(x,y,vx,vy,options={})=>{
+          const life=options.life??(70+Math.random()*45);
+          particles.push({
+            x,y,vx,vy,
+            gravity:options.gravity??(.028+Math.random()*.035),
+            drag:options.drag??(.982+Math.random()*.012),
+            life,
+            maxLife:life,
+            size:options.size??(1.2+Math.random()*3.2),
+            color:options.color??colors[Math.floor(Math.random()*colors.length)],
+            twinkle:options.twinkle??false
+          });
+        };
+
+        const burst=(x,y,scale=.8+Math.random()*1.2,pattern="random")=>{
           const baseHue=Math.random()*360;
+          const colorA=colors[Math.floor(Math.random()*colors.length)];
+          const colorB=colors[Math.floor(Math.random()*colors.length)];
+          const count=Math.round((pattern==="willow"?95:pattern==="ring"?78:pattern==="heart"?88:pattern==="spiral"?90:72)*scale);
+
+          if(pattern==="ring"){
+            for(let i=0;i<count;i++){
+              const angle=Math.PI*2*i/count;
+              const speed=(3.2+Math.random()*1.2)*scale;
+              addParticle(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,{
+                color:i%2?colorA:colorB,
+                size:1.4+Math.random()*2.4,
+                life:78+Math.random()*28
+              });
+            }
+            return;
+          }
+
+          if(pattern==="willow"){
+            for(let i=0;i<count;i++){
+              const angle=Math.PI*2*i/count+(Math.random()-.5)*.05;
+              const speed=(2.2+Math.random()*3.6)*scale;
+              addParticle(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,{
+                color:i%3===0?"#ffffff":colorA,
+                gravity:.055+Math.random()*.03,
+                drag:.988,
+                size:1.2+Math.random()*2.6,
+                life:110+Math.random()*55,
+                twinkle:true
+              });
+            }
+            return;
+          }
+
+          if(pattern==="spiral"){
+            const arms=5+Math.floor(Math.random()*3);
+            for(let i=0;i<count;i++){
+              const arm=i%arms;
+              const t=i/count;
+              const angle=arm*(Math.PI*2/arms)+t*Math.PI*3;
+              const speed=(2.2+4.8*t)*scale;
+              addParticle(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,{
+                color:arm%2?colorA:colorB,
+                size:1.3+Math.random()*2.3,
+                life:80+Math.random()*38
+              });
+            }
+            return;
+          }
+
+          if(pattern==="heart"){
+            for(let i=0;i<count;i++){
+              const t=Math.PI*2*i/count;
+              const hx=16*Math.pow(Math.sin(t),3);
+              const hy=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+              const norm=Math.hypot(hx,hy)||1;
+              const speed=(3.2+Math.random()*1.4)*scale;
+              addParticle(x,y,(hx/norm)*speed,(-hy/norm)*speed,{
+                color:i%2?colorA:"#ffffff",
+                gravity:.032,
+                drag:.987,
+                size:1.5+Math.random()*2.4,
+                life:82+Math.random()*34
+              });
+            }
+            return;
+          }
+
+          if(pattern==="double"){
+            burst(x,y,scale*.78,"ring");
+            setTimeout(()=>{
+              if(els.victoryOverlay.classList.contains("show")){
+                burst(x,y,scale*1.15,"random");
+              }
+            },110);
+            return;
+          }
+
           for(let i=0;i<count;i++){
-            const angle=(Math.PI*2*i/count)+(Math.random()-.5)*.09;
-            const speed=2.4+Math.random()*5.4;
-            particles.push({
-              x,y,
-              vx:Math.cos(angle)*speed,
-              vy:Math.sin(angle)*speed,
-              gravity:.038+Math.random()*.025,
-              drag:.986+Math.random()*.008,
-              life:78+Math.random()*38,
-              maxLife:116,
-              size:1.6+Math.random()*2.9,
-              color:Math.random()>.28
+            const angle=Math.PI*2*i/count+(Math.random()-.5)*.12;
+            const speed=(2.1+Math.random()*5.8)*scale;
+            addParticle(x,y,Math.cos(angle)*speed,Math.sin(angle)*speed,{
+              color:Math.random()>.25
                 ? colors[Math.floor(Math.random()*colors.length)]
-                : `hsl(${baseHue+Math.random()*40-20} 100% 60%)`
+                : `hsl(${baseHue+Math.random()*50-25} 100% 60%)`,
+              size:1.2+Math.random()*3.4*scale,
+              life:72+Math.random()*42
             });
           }
+        };
+
+        const fireRandomBurst=()=>{
+          const patterns=["random","ring","willow","spiral","heart","double"];
+          const pattern=patterns[Math.floor(Math.random()*patterns.length)];
+          const scale=.45+Math.random()*1.35;
+          burst(
+            width*(.06+Math.random()*.88),
+            height*(.06+Math.random()*.58),
+            scale,
+            pattern
+          );
         };
 
         const animate=()=>{
@@ -1500,11 +1596,13 @@ RETURN TO SCOREBOARD</button>
           ctx.clearRect(0,0,width,height);
 
           if(frame>=nextBurst){
-            burst(
-              width*(.12+Math.random()*.76),
-              height*(.10+Math.random()*.43)
-            );
-            nextBurst=frame+24+Math.floor(Math.random()*17);
+            const bursts=2+Math.floor(Math.random()*4);
+            for(let i=0;i<bursts;i++){
+              setTimeout(()=>{
+                if(els.victoryOverlay.classList.contains("show"))fireRandomBurst();
+              },i*90);
+            }
+            nextBurst=frame+12+Math.floor(Math.random()*14);
           }
 
           ctx.globalCompositeOperation="lighter";
@@ -1518,7 +1616,9 @@ RETURN TO SCOREBOARD</button>
             p.vy=p.vy*p.drag+p.gravity;
             p.life--;
 
-            const alpha=Math.max(0,p.life/p.maxLife);
+            let alpha=Math.max(0,p.life/p.maxLife);
+            if(p.twinkle)alpha*=.55+.45*Math.abs(Math.sin((p.maxLife-p.life)*.42));
+
             ctx.globalAlpha=alpha;
             ctx.strokeStyle=p.color;
             ctx.lineWidth=p.size;
@@ -1537,9 +1637,19 @@ RETURN TO SCOREBOARD</button>
         };
 
         resize();
-        burst(width*.22,height*.25);
-        burst(width*.78,height*.22);
-        nextBurst=18;
+        window.addEventListener("resize",resize,{once:true});
+
+        [
+          [width*.12,height*.18,.65,"ring"],
+          [width*.28,height*.28,1.15,"willow"],
+          [width*.50,height*.14,.8,"spiral"],
+          [width*.72,height*.26,1.3,"random"],
+          [width*.88,height*.16,.7,"heart"],
+          [width*.18,height*.48,.55,"double"],
+          [width*.82,height*.46,.9,"ring"]
+        ].forEach(([x,y,s,p],i)=>setTimeout(()=>burst(x,y,s,p),i*120));
+
+        nextBurst=10;
         fireworksAnimationId=requestAnimationFrame(animate);
       }
 
