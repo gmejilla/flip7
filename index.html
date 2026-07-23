@@ -281,7 +281,7 @@
       background:linear-gradient(180deg,#ff5c72,#dc173a);
       border:2px solid #a70b29;
       box-shadow:0 3px 0 #8b0a25;
-      font-size:1.25rem;
+      font-size:0.9375rem;
       line-height:1;
     }
     .remove-player-btn:hover{
@@ -1020,8 +1020,7 @@
         <div id="scoreInputs" class="score-input-list"></div>
 
         <div class="action-stack">
-          <button id="saveRoundBtn" class="save-btn" type="button">▣ SAVE ROUND</button>
-          <button id="printBtn" class="secondary-btn" type="button">PRINT SCOREBOARD</button>
+          <button id="saveRoundBtn" class="save-btn" type="button">✓ SAVE ROUND</button>
           <button id="resetBtn" class="danger-btn" type="button">RESET GAME</button>
         </div>
 
@@ -1031,7 +1030,7 @@
         </div>
       </aside>
 
-      <section class="panel">
+      <section id="currentStandingsPanel" class="panel">
         <div class="section-ribbon">★ Current Standings ★</div>
         <div id="standings" class="standing-list"></div>
         <div id="leadMessage" class="lead-message" aria-live="polite">Enter Round 1 scores to begin.</div>
@@ -1100,7 +1099,6 @@
         addPlayerBtn:document.getElementById("addPlayerBtn"),
         saveRoundBtn:document.getElementById("saveRoundBtn"),
         resetBtn:document.getElementById("resetBtn"),
-        printBtn:document.getElementById("printBtn"),
         soundBtn:document.getElementById("soundBtn"),
         soundStatus:document.getElementById("soundStatus"),
         victoryOverlay:document.getElementById("victoryOverlay"),
@@ -1395,10 +1393,10 @@
               <div class="total-cell">${score} <span>PTS</span></div>
               <div class="progress-cell">
                 <div class="progress-track"><div class="progress-bar" style="width:${progress}%"></div></div>
-                <div class="progress-label">
+                <div class="progress-label print-hide">
                   ${won?`<span class="winner-pill">WINNER!</span> ${score-WINNING_SCORE}+ POINTS OVER 200!`:`${remaining} POINTS TO WIN`}
                 </div>
-                <div class="chance-wrap" title="A simple race-position estimate based on each player's points remaining">
+                <div class="chance-wrap print-hide" title="A simple race-position estimate based on each player's points remaining">
                   <span>EST. WIN CHANCE</span>
                   <div class="chance-track"><div class="chance-fill" style="width:${chance}%"></div></div>
                   <strong>${chance}%</strong>
@@ -1526,7 +1524,6 @@
       els.addPlayerBtn.addEventListener("click",addPlayer);
       els.newPlayerName.addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer()});
       els.resetBtn.addEventListener("click",resetGame);
-      els.printBtn.addEventListener("click",()=>window.print());
       els.soundBtn.addEventListener("click",()=>{
         soundEnabled=!soundEnabled;
         els.soundStatus.textContent=soundEnabled?"ON":"OFF";
