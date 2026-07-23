@@ -57,7 +57,7 @@
 
     .topbar{
       display:grid;
-      grid-template-columns:210px 1fr 110px 500px;
+      grid-template-columns:500px 1fr 210px;
       gap:12px;
       align-items:stretch;
       margin-bottom:12px;
@@ -1129,37 +1129,6 @@ RETURN TO SCOREBOARD</button>
 
   <main class="app">
     <header class="topbar">
-      <section class="score-box">
-        <div>
-          <div class="label">WINNING SCORE</div>
-          <div class="number">200</div>
-          <div class="points">POINTS</div>
-        </div>
-      </section>
-
-      <section class="summary-box">
-        <div class="summary-item">
-          <div class="summary-label">CURRENT ROUND</div>
-          <div id="roundMetric" class="summary-value">1</div>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">PLAYERS</div>
-          <div id="playerMetric" class="summary-value">4</div>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">LEADER</div>
-          <div id="leaderMetric" class="summary-value leader">-</div>
-          <div id="leaderPoints" class="summary-sub">0 PTS</div>
-        </div>
-      </section>
-
-      <button id="soundBtn" class="sound-box" type="button">
-          <div class="sound-icon">🔊</div>
-          <div class="sound-label">SOUND</div>
-          <div id="soundStatus" class="sound-status">ON</div>
-        </button>
-
-      
       <section class="brand-box" aria-label="Flip 7 branding">
         
         <div class="flip-logo-clean" aria-label="Flip 7 logo">
@@ -1208,6 +1177,29 @@ RETURN TO SCOREBOARD</button>
                     paint-order="stroke fill">7</text>
             </g>
           </svg>
+        </div>
+      </section>
+
+      <section class="summary-box">
+        <div class="summary-item">
+          <div class="summary-label">CURRENT ROUND</div>
+          <div id="roundMetric" class="summary-value">1</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">PLAYERS</div>
+          <div id="playerMetric" class="summary-value">4</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">LEADER</div>
+          <div id="leaderMetric" class="summary-value leader">-</div>
+          <div id="leaderPoints" class="summary-sub">0 PTS</div>
+        </div>
+      </section>
+<section class="score-box">
+        <div>
+          <div class="label">WINNING SCORE</div>
+          <div class="number">200</div>
+          <div class="points">POINTS</div>
         </div>
       </section>
 
@@ -2004,13 +1996,6 @@ function saveRound(){
       els.newPlayerName.addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer()});
       els.resetBtn.addEventListener("click",resetGame);
       els.initializeGameBtn.addEventListener("click",initializeGame);
-      els.soundBtn.addEventListener("click",()=>{
-        soundEnabled=!soundEnabled;
-        els.soundStatus.textContent=soundEnabled?"ON":"OFF";
-        els.soundStatus.style.color=soundEnabled?"var(--green)":"var(--red)";
-        els.soundBtn.querySelector(".sound-icon").textContent=soundEnabled?"🔊":"🔇";
-        if(soundEnabled)playSaveSound();
-      });
       els.closeVictoryBtn.addEventListener("click",closeVictory);
       els.replayVictoryBtn.addEventListener("click",()=>{
         const eligibleWinners=state.players.filter(p=>total(p)>=WINNING_SCORE);
