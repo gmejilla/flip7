@@ -1291,7 +1291,7 @@
 
 
 
-    /* v5.5.0.6: separate victory content and bottom action zones. */
+    /* v1.0.0: separate victory content and bottom action zones. */
     .victory-overlay.show{
       display:grid;
       grid-template-rows:minmax(0,1fr) auto;
@@ -1981,23 +1981,50 @@ RETURN TO SCOREBOARD</button>
 
         els.scoreInputs.innerHTML=state.players.map((p,i)=>`
           <div class="swipe-player-shell" data-swipe-id="${p.id}">
-            <button class="swipe-delete-action" data-swipe-delete-id="${p.id}" type="button" aria-label="Delete ${esc(p.name)}">DELETE</button>
+            <button class="swipe-delete-action" data-swipe-delete-id="${p.id}" type="button" tabindex="-1" aria-label="Delete ${esc(p.name)}">DELETE</button>
             <div class="score-input-row">
               <div class="score-player-wrap">
                 <button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>
                 <div class="score-name" style="color:${COLORS[i%COLORS.length]}">${esc(p.name)}</div>
               </div>
-              <input id="score-${p.id}-${scoreInputRenderToken}" data-player-id="${p.id}" type="number" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" min="-200" max="999" placeholder="0" value="" />
+              <input id="score-${p.id}-${scoreInputRenderToken}" data-player-id="${p.id}" tabindex="${i+1}" type="number" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" min="-200" max="999" placeholder="0" value="" />
             </div>
           </div>`).join("");
 
         clearScoreInputs();
         requestAnimationFrame(clearScoreInputs);
 
-        els.scoreInputs.querySelectorAll("[data-player-id]").forEach(input=>{
+        const scoreInputs=[...els.scoreInputs.querySelectorAll("[data-player-id]")];
+
+        scoreInputs.forEach((input,index)=>{
           input.addEventListener("input",()=>{
             if(input.value.trim()!==""){
               input.closest(".score-input-row")?.classList.remove("missing-score");
+            }
+          });
+
+          input.addEventListener("keydown",event=>{
+            if(event.key==="Tab"){
+              const targetIndex=event.shiftKey ? index-1 : index+1;
+              const target=scoreInputs[targetIndex];
+
+              if(target){
+                event.preventDefault();
+                target.focus({preventScroll:true});
+                target.select();
+                target.scrollIntoView({block:"nearest",behavior:"smooth"});
+              }
+              return;
+            }
+
+            if(event.key==="Enter"){
+              event.preventDefault();
+              const next=scoreInputs[index+1];
+              if(next){
+                next.focus({preventScroll:true});
+                next.select();
+                next.scrollIntoView({block:"nearest",behavior:"smooth"});
+              }
             }
           });
         });
