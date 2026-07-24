@@ -64,7 +64,7 @@
     }
 
     .score-box,.summary-box,.sound-box,.brand-box,.panel{
-      background:linear-gradient(180deg,#fffefb,#fff8e9);
+      background:linear-gradient(180deg,#fffefb 0%,#fff8e9 100%);
       border:4px solid white;
       outline:3px solid var(--navy);
       border-radius:24px;
@@ -250,6 +250,7 @@
     .score-input-list{display:grid;gap:0}
     .swipe-player-shell{
       position:relative;
+      isolation:isolate;
       overflow:hidden;
       border-bottom:1px solid #ded6c8;
       background:#d8123f;
@@ -259,8 +260,8 @@
       top:0;
       right:0;
       bottom:0;
-      z-index:5;
-      pointer-events:auto;
+      z-index:1;
+      pointer-events:none;
       width:112px;
       display:flex;
       align-items:center;
@@ -283,9 +284,12 @@
       transform:none;
       filter:none;
     }
+    .swipe-player-shell.delete-open .swipe-delete-action{
+      pointer-events:auto;
+    }
     .score-input-row{
       position:relative;
-      z-index:2;
+      z-index:3;
       display:grid;
       grid-template-columns:1fr 138px;
       align-items:center;
@@ -1262,7 +1266,7 @@
 
 
 
-    /* v5.5.0.1: separate victory content and bottom action zones. */
+    /* v5.5.0.2: separate victory content and bottom action zones. */
     .victory-overlay.show{
       display:grid;
       grid-template-rows:minmax(0,1fr) auto;
