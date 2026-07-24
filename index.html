@@ -64,7 +64,7 @@
     }
 
     .score-box,.summary-box,.sound-box,.brand-box,.panel{
-      background:linear-gradient(180deg,#fffefb,#fff8e9);
+      background:linear-gradient(180deg,#fffefb 0%,#fff8e9 100%);
       border:4px solid white;
       outline:3px solid var(--navy);
       border-radius:24px;
@@ -248,13 +248,57 @@
     }
 
     .score-input-list{display:grid;gap:0}
+    .swipe-player-shell{
+      position:relative;
+      isolation:isolate;
+      overflow:hidden;
+      border-bottom:1px solid #ded6c8;
+      background:#d8123f;
+    }
+    .swipe-delete-action{
+      position:absolute;
+      top:0;
+      right:0;
+      bottom:0;
+      z-index:1;
+      pointer-events:none;
+      width:112px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      border:0;
+      border-radius:0;
+      color:white;
+      background:linear-gradient(180deg,#f22b58,#c80734);
+      box-shadow:none;
+      font:inherit;
+      font-size:.95rem;
+      font-weight:1000;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      touch-action:manipulation;
+    }
+    .swipe-delete-action:hover,
+    .swipe-delete-action:active{
+      transform:none;
+      filter:none;
+    }
+    .swipe-player-shell.delete-open .swipe-delete-action{
+      pointer-events:auto;
+    }
     .score-input-row{
+      position:relative;
+      z-index:3;
       display:grid;
       grid-template-columns:1fr 138px;
       align-items:center;
       gap:12px;
       padding:10px 8px;
-      border-bottom:1px solid #ded6c8;
+      background:linear-gradient(180deg,#fffefb,#fff8e9);
+      transform:translate3d(0,0,0);
+      transition:transform .2s ease;
+      will-change:transform;
     }
     .score-name{
       font-size:1.45rem;
@@ -909,15 +953,153 @@
       .progress-cell{grid-column:1/-1;border-top:1px solid #ccc4d4}
     }
     @media(max-width:560px){
-      .topbar{grid-template-columns:1fr}
-      .summary-box{grid-template-columns:1fr}
-      .summary-item:not(:last-child)::after{display:none}
-      .standing-row{grid-template-columns:56px 1fr}
-      .total-cell{grid-column:3;border:0;text-align:left;font-size:1.7rem}
-      .progress-cell{grid-column:1/-1}
-      .score-input-row{grid-template-columns:1fr 110px}
+      body{padding:8px}
+      .app{width:100%;margin:0 auto}
+      .topbar{grid-template-columns:1fr;gap:9px}
+      .brand-box{min-height:104px;padding:8px 12px}
+      .flip-logo-clean{max-width:310px}
+      .summary-box{grid-template-columns:repeat(2,1fr)}
+      .summary-item{padding:11px 6px;min-height:88px}
+      .summary-item:nth-child(2)::after{display:none}
+      .summary-item:nth-child(-n+2){border-bottom:1px solid #d6cfda}
+      .summary-label{font-size:.86rem}
+      .summary-value{font-size:2.15rem;margin-top:5px}
+      .summary-value.leader,.summary-value.last{font-size:1.65rem}
+      .summary-sub{font-size:.8rem}
+      .score-box{padding:9px}
+      .score-box .label{font-size:.9rem}
+      .score-box .number{font-size:3rem}
+      .score-box .points{font-size:1rem}
+      .main-grid{gap:10px}
+      .panel{padding:12px}
+      .section-ribbon{font-size:1.08rem}
+      .round-banner{width:86%}
+      .score-input-list{gap:6px}
+      .swipe-player-shell{
+        border:0;
+        border-radius:12px;
+        touch-action:pan-y;
+      }
+      .score-input-row{
+        grid-template-columns:minmax(0,1fr) 92px;
+        gap:8px;
+        padding:9px 8px;
+      }
+      .remove-player-btn{display:none}
+      .score-name{font-size:1.1rem}
+      .score-input-row input{font-size:1.2rem;padding:10px 8px}
       .add-row{grid-template-columns:1fr}
+      .action-stack,.add-row{
+        position:relative;
+        z-index:10;
+      }
+      .save-btn{font-size:1.15rem;padding:14px}
+      .secondary-btn,.danger-btn{
+        min-height:48px;
+        touch-action:manipulation;
+      }
+      .standing-row{grid-template-columns:52px minmax(0,1fr) 88px}
+      .standing-name{font-size:1.15rem;padding:10px 8px}
+      .total-cell{grid-column:3;border:0;text-align:center;font-size:1.35rem;padding:8px 5px}
+      .progress-cell{grid-column:1/-1;padding:9px 10px}
+      .progress-label{font-size:.75rem}
+      .rank-card{width:42px;height:60px}
+      .history-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .lead-message{font-size:1rem;padding:11px}
     }
+
+    .confirm-modal{
+      position:fixed;
+      inset:0;
+      z-index:70000;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(8,13,55,.72);
+      backdrop-filter:blur(5px);
+      -webkit-backdrop-filter:blur(5px);
+    }
+    .confirm-modal.show{display:flex}
+    .confirm-card{
+      width:min(430px,100%);
+      overflow:hidden;
+      border:4px solid var(--gold);
+      border-radius:24px;
+      background:#fffaf0;
+      box-shadow:0 24px 70px rgba(0,0,0,.5);
+      animation:confirmIn .2s ease-out;
+    }
+    @keyframes confirmIn{
+      from{opacity:0;transform:scale(.92) translateY(12px)}
+      to{opacity:1;transform:scale(1) translateY(0)}
+    }
+    .confirm-heading{
+      padding:18px 20px 8px;
+      color:var(--navy);
+      font-size:1.65rem;
+      font-weight:1000;
+      text-align:center;
+      text-transform:uppercase;
+    }
+    .confirm-message{
+      padding:4px 22px 22px;
+      white-space:pre-line;
+      color:#29263b;
+      text-align:center;
+      line-height:1.55;
+    }
+    .confirm-warning{
+      display:block;
+      margin:0 0 14px;
+      color:#c80734;
+      font-size:1.35rem;
+      font-weight:1000;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .confirm-warning::before{
+      content:"⚠ ";
+    }
+    .confirm-warning::after{
+      content:" ⚠";
+    }
+    .confirm-body{
+      display:block;
+      font-size:1.08rem;
+      font-weight:900;
+      letter-spacing:.03em;
+      color:#1b2148;
+      font-size:1.05rem;
+      line-height:1.45;
+      text-align:center;
+    }
+    .confirm-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:14px;
+      border-top:1px solid #ddd3c3;
+      background:#f5ecdc;
+    }
+    .confirm-actions button{
+      min-height:52px;
+      border-radius:13px;
+      touch-action:manipulation;
+    }
+    .confirm-cancel{
+      color:var(--navy);
+      background:white;
+      border:2px solid var(--navy);
+    }
+    .confirm-accept{
+      color:white;
+      background:linear-gradient(180deg,#f12b58,#c80734);
+      border:2px solid #9d082b;
+      box-shadow:0 4px 0 #7f0623;
+    }
+    body.modal-open{overflow:hidden}
+
     @media print{
       body{background:white}
       body::before,.sound-box,.action-stack,.add-row,.lead-message,.victory-overlay{display:none!important}
@@ -1109,7 +1291,7 @@
 
 
 
-    /* v5.3.1.0: separate victory content and bottom action zones. */
+    /* v5.5.0.6: separate victory content and bottom action zones. */
     .victory-overlay.show{
       display:grid;
       grid-template-rows:minmax(0,1fr) auto;
@@ -1798,12 +1980,15 @@ RETURN TO SCOREBOARD</button>
         }
 
         els.scoreInputs.innerHTML=state.players.map((p,i)=>`
-          <div class="score-input-row">
-            <div class="score-player-wrap">
-              <button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>
-              <div class="score-name" style="color:${COLORS[i%COLORS.length]}">${esc(p.name)}</div>
+          <div class="swipe-player-shell" data-swipe-id="${p.id}">
+            <button class="swipe-delete-action" data-swipe-delete-id="${p.id}" type="button" aria-label="Delete ${esc(p.name)}">DELETE</button>
+            <div class="score-input-row">
+              <div class="score-player-wrap">
+                <button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>
+                <div class="score-name" style="color:${COLORS[i%COLORS.length]}">${esc(p.name)}</div>
+              </div>
+              <input id="score-${p.id}-${scoreInputRenderToken}" data-player-id="${p.id}" type="number" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" min="-200" max="999" placeholder="0" value="" />
             </div>
-            <input id="score-${p.id}-${scoreInputRenderToken}" data-player-id="${p.id}" type="number" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" min="-200" max="999" placeholder="0" value="" />
           </div>`).join("");
 
         clearScoreInputs();
@@ -1820,6 +2005,106 @@ RETURN TO SCOREBOARD</button>
         els.scoreInputs.querySelectorAll("[data-remove-id]").forEach(button=>{
           button.addEventListener("click",()=>removePlayer(Number(button.dataset.removeId)));
         });
+
+        setupMobileSwipeDelete();
+      }
+
+      function setupMobileSwipeDelete(){
+        if(!window.matchMedia("(max-width:560px)").matches)return;
+
+        const shells=[...els.scoreInputs.querySelectorAll(".swipe-player-shell")];
+        let openShell=null;
+
+        const closeShell=shell=>{
+          if(!shell)return;
+          const content=shell.querySelector(".score-input-row");
+          shell.classList.remove("delete-open");
+          if(content){
+            content.style.transition="transform .2s ease";
+            content.style.transform="translate3d(0,0,0)";
+          }
+          if(openShell===shell)openShell=null;
+        };
+
+        shells.forEach(shell=>{
+          const content=shell.querySelector(".score-input-row");
+          const deleteButton=shell.querySelector("[data-swipe-delete-id]");
+          const playerId=Number(shell.dataset.swipeId);
+          let startX=0;
+          let startY=0;
+          let offset=0;
+          let tracking=false;
+          let horizontal=false;
+
+          const setOffset=value=>{
+            offset=Math.max(-112,Math.min(0,value));
+            content.style.transform=`translate3d(${offset}px,0,0)`;
+          };
+
+          content.addEventListener("touchstart",event=>{
+            if(event.touches.length!==1)return;
+            if(openShell && openShell!==shell)closeShell(openShell);
+
+            const touch=event.touches[0];
+            startX=touch.clientX;
+            startY=touch.clientY;
+            offset=shell.classList.contains("delete-open")?-112:0;
+            tracking=true;
+            horizontal=false;
+            content.style.transition="none";
+          },{passive:true});
+
+          content.addEventListener("touchmove",event=>{
+            if(!tracking || event.touches.length!==1)return;
+            const touch=event.touches[0];
+            const dx=touch.clientX-startX;
+            const dy=touch.clientY-startY;
+
+            if(!horizontal){
+              if(Math.abs(dx)<7 && Math.abs(dy)<7)return;
+              if(Math.abs(dy)>Math.abs(dx)){
+                tracking=false;
+                return;
+              }
+              horizontal=true;
+            }
+
+            const base=shell.classList.contains("delete-open")?-112:0;
+            setOffset(base+dx);
+            event.preventDefault();
+          },{passive:false});
+
+          const finishSwipe=()=>{
+            if(!tracking)return;
+            tracking=false;
+            content.style.transition="transform .2s ease";
+
+            if(offset<=-56){
+              shell.classList.add("delete-open");
+              setOffset(-112);
+              openShell=shell;
+            }else{
+              closeShell(shell);
+            }
+          };
+
+          content.addEventListener("touchend",finishSwipe,{passive:true});
+          content.addEventListener("touchcancel",finishSwipe,{passive:true});
+
+          deleteButton.addEventListener("touchstart",event=>{
+            event.stopPropagation();
+          },{passive:true});
+
+          deleteButton.addEventListener("click",event=>{
+            event.preventDefault();
+            event.stopPropagation();
+            removePlayer(playerId);
+          });
+        });
+
+        document.addEventListener("touchstart",event=>{
+          if(openShell && !openShell.contains(event.target))closeShell(openShell);
+        },{passive:true});
       }
 
       function estimatedWinChances(players){
@@ -2025,11 +2310,80 @@ RETURN TO SCOREBOARD</button>
           :`${name} joined the game!`;
       }
 
-      function removePlayer(id){
+      function showConfirmModal({
+        title="Confirm Action",
+        message="Are you sure?",
+        confirmText="CONFIRM",
+        cancelText="CANCEL"
+      }={}){
+        const modal=document.getElementById("confirmModal");
+        const heading=document.getElementById("confirmHeading");
+        const messageEl=document.getElementById("confirmMessage");
+        const accept=document.getElementById("confirmAccept");
+        const cancel=document.getElementById("confirmCancel");
+
+        heading.textContent=title;
+        if(message.startsWith("** WARNING **")){
+          const body=message.replace("** WARNING **\n","");
+          messageEl.innerHTML='<span class="confirm-warning">WARNING</span><span class="confirm-body">'+body.replace(/\n/g,"<br>")+"</span>";
+        }else{
+          messageEl.innerHTML=message.replace(/\n/g,"<br>");
+        }
+        accept.textContent=confirmText;
+        cancel.textContent=cancelText;
+        modal.classList.add("show");
+        document.body.classList.add("modal-open");
+
+        return new Promise(resolve=>{
+          let settled=false;
+
+          const finish=result=>{
+            if(settled)return;
+            settled=true;
+            modal.classList.remove("show");
+            document.body.classList.remove("modal-open");
+            accept.removeEventListener("click",onAccept);
+            cancel.removeEventListener("click",onCancel);
+            modal.removeEventListener("click",onBackdrop);
+            document.removeEventListener("keydown",onKeydown);
+            resolve(result);
+          };
+
+          const onAccept=event=>{
+            event.preventDefault();
+            event.stopPropagation();
+            finish(true);
+          };
+          const onCancel=event=>{
+            event.preventDefault();
+            event.stopPropagation();
+            finish(false);
+          };
+          const onBackdrop=event=>{
+            if(event.target===modal)finish(false);
+          };
+          const onKeydown=event=>{
+            if(event.key==="Escape")finish(false);
+            if(event.key==="Enter")finish(true);
+          };
+
+          accept.addEventListener("click",onAccept);
+          cancel.addEventListener("click",onCancel);
+          modal.addEventListener("click",onBackdrop);
+          document.addEventListener("keydown",onKeydown);
+          requestAnimationFrame(()=>accept.focus());
+        });
+      }
+
+      async function removePlayer(id){
         const player=state.players.find(p=>p.id===id);
         if(!player)return;
 
-        const confirmed=confirm(`Remove ${player.name} from the game? Their score history will be deleted.`);
+        const confirmed=await showConfirmModal({
+          title:"Delete Player?",
+          message:`REMOVE ${player.name.toUpperCase()} FROM THE GAME?\nTHEIR SCORE HISTORY WILL BE DELETED.`,
+          confirmText:"DELETE PLAYER"
+        });
         if(!confirmed)return;
 
         state.players=state.players.filter(p=>p.id!==id);
@@ -2122,13 +2476,23 @@ function saveRound(){
         render();
       }
 
-      function initializeGame(){
-        if(!confirm("Initialize game? This will remove ALL players and clear all scores."))return;
+      async function initializeGame(){
+        const confirmed=await showConfirmModal({
+          title:"Initialize Game?",
+          message:"** WARNING **\nTHIS WILL REMOVE ALL PLAYERS\nAND CLEAR ALL SCORES.",
+          confirmText:"INITIALIZE"
+        });
+        if(!confirmed)return;
         applyInitializeGameState();
       }
 
-      function resetGame(){
-        if(!confirm("Reset all scores and start a new game?"))return;
+      async function resetGame(){
+        const confirmed=await showConfirmModal({
+          title:"Reset Game?",
+          message:"RESET ALL SCORES\nAND START A NEW GAME\nWITH THE CURRENT PLAYERS?",
+          confirmText:"RESET"
+        });
+        if(!confirmed)return;
         clearScoreInputs();
         state.players=state.players.map(p=>({...p,scores:[]}));
         els.leadMessage.textContent="Scores cleared. Enter Round 1.";
@@ -2181,6 +2545,18 @@ const winners=eligibleWinners.filter(p=>total(p)===highestWinningScore);
       applyInitializeGameState();
     })();
 </script>
+
+  <div id="confirmModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
+    <div class="confirm-card">
+      <div id="confirmHeading" class="confirm-heading">Confirm Action</div>
+      <div id="confirmMessage" class="confirm-message"></div>
+      <div class="confirm-actions">
+        <button id="confirmCancel" class="confirm-cancel" type="button">CANCEL</button>
+        <button id="confirmAccept" class="confirm-accept" type="button">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
 
