@@ -259,7 +259,8 @@
       top:0;
       right:0;
       bottom:0;
-      z-index:1;
+      z-index:5;
+      pointer-events:auto;
       width:112px;
       display:flex;
       align-items:center;
@@ -1002,6 +1003,74 @@
       .history-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
       .lead-message{font-size:1rem;padding:11px}
     }
+
+    .confirm-modal{
+      position:fixed;
+      inset:0;
+      z-index:70000;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(8,13,55,.72);
+      backdrop-filter:blur(5px);
+      -webkit-backdrop-filter:blur(5px);
+    }
+    .confirm-modal.show{display:flex}
+    .confirm-card{
+      width:min(430px,100%);
+      overflow:hidden;
+      border:4px solid var(--gold);
+      border-radius:24px;
+      background:#fffaf0;
+      box-shadow:0 24px 70px rgba(0,0,0,.5);
+      animation:confirmIn .2s ease-out;
+    }
+    @keyframes confirmIn{
+      from{opacity:0;transform:scale(.92) translateY(12px)}
+      to{opacity:1;transform:scale(1) translateY(0)}
+    }
+    .confirm-heading{
+      padding:18px 20px 8px;
+      color:var(--navy);
+      font-size:1.65rem;
+      font-weight:1000;
+      text-align:center;
+      text-transform:uppercase;
+    }
+    .confirm-message{
+      padding:4px 22px 22px;
+      color:#29263b;
+      font-size:1.05rem;
+      line-height:1.45;
+      text-align:center;
+    }
+    .confirm-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:14px;
+      border-top:1px solid #ddd3c3;
+      background:#f5ecdc;
+    }
+    .confirm-actions button{
+      min-height:52px;
+      border-radius:13px;
+      touch-action:manipulation;
+    }
+    .confirm-cancel{
+      color:var(--navy);
+      background:white;
+      border:2px solid var(--navy);
+    }
+    .confirm-accept{
+      color:white;
+      background:linear-gradient(180deg,#f12b58,#c80734);
+      border:2px solid #9d082b;
+      box-shadow:0 4px 0 #7f0623;
+    }
+    body.modal-open{overflow:hidden}
+
     @media print{
       body{background:white}
       body::before,.sound-box,.action-stack,.add-row,.lead-message,.victory-overlay{display:none!important}
@@ -1193,7 +1262,7 @@
 
 
 
-    /* v5.5.0.0: separate victory content and bottom action zones. */
+    /* v5.5.0.1: separate victory content and bottom action zones. */
     .victory-overlay.show{
       display:grid;
       grid-template-rows:minmax(0,1fr) auto;
@@ -1993,11 +2062,9 @@ RETURN TO SCOREBOARD</button>
           content.addEventListener("touchend",finishSwipe,{passive:true});
           content.addEventListener("touchcancel",finishSwipe,{passive:true});
 
-          deleteButton.addEventListener("touchend",event=>{
-            event.preventDefault();
+          deleteButton.addEventListener("touchstart",event=>{
             event.stopPropagation();
-            removePlayer(playerId);
-          },{passive:false});
+          },{passive:true});
 
           deleteButton.addEventListener("click",event=>{
             event.preventDefault();
@@ -2008,7 +2075,7 @@ RETURN TO SCOREBOARD</button>
 
         document.addEventListener("touchstart",event=>{
           if(openShell && !openShell.contains(event.target))closeShell(openShell);
-        },{passive:true,once:true});
+        },{passive:true});
       }
 
       function estimatedWinChances(players){
@@ -2214,11 +2281,75 @@ RETURN TO SCOREBOARD</button>
           :`${name} joined the game!`;
       }
 
-      function removePlayer(id){
+      function showConfirmModal({
+        title="Confirm Action",
+        message="Are you sure?",
+        confirmText="CONFIRM",
+        cancelText="CANCEL"
+      }={}){
+        const modal=document.getElementById("confirmModal");
+        const heading=document.getElementById("confirmHeading");
+        const messageEl=document.getElementById("confirmMessage");
+        const accept=document.getElementById("confirmAccept");
+        const cancel=document.getElementById("confirmCancel");
+
+        heading.textContent=title;
+        messageEl.textContent=message;
+        accept.textContent=confirmText;
+        cancel.textContent=cancelText;
+        modal.classList.add("show");
+        document.body.classList.add("modal-open");
+
+        return new Promise(resolve=>{
+          let settled=false;
+
+          const finish=result=>{
+            if(settled)return;
+            settled=true;
+            modal.classList.remove("show");
+            document.body.classList.remove("modal-open");
+            accept.removeEventListener("click",onAccept);
+            cancel.removeEventListener("click",onCancel);
+            modal.removeEventListener("click",onBackdrop);
+            document.removeEventListener("keydown",onKeydown);
+            resolve(result);
+          };
+
+          const onAccept=event=>{
+            event.preventDefault();
+            event.stopPropagation();
+            finish(true);
+          };
+          const onCancel=event=>{
+            event.preventDefault();
+            event.stopPropagation();
+            finish(false);
+          };
+          const onBackdrop=event=>{
+            if(event.target===modal)finish(false);
+          };
+          const onKeydown=event=>{
+            if(event.key==="Escape")finish(false);
+            if(event.key==="Enter")finish(true);
+          };
+
+          accept.addEventListener("click",onAccept);
+          cancel.addEventListener("click",onCancel);
+          modal.addEventListener("click",onBackdrop);
+          document.addEventListener("keydown",onKeydown);
+          requestAnimationFrame(()=>accept.focus());
+        });
+      }
+
+      async function removePlayer(id){
         const player=state.players.find(p=>p.id===id);
         if(!player)return;
 
-        const confirmed=confirm(`Remove ${player.name} from the game? Their score history will be deleted.`);
+        const confirmed=await showConfirmModal({
+          title:"Delete Player?",
+          message:`Remove ${player.name} from the game? Their score history will be deleted.`,
+          confirmText:"DELETE PLAYER"
+        });
         if(!confirmed)return;
 
         state.players=state.players.filter(p=>p.id!==id);
@@ -2311,13 +2442,23 @@ function saveRound(){
         render();
       }
 
-      function initializeGame(){
-        if(!confirm("Initialize game? This will remove ALL players and clear all scores."))return;
+      async function initializeGame(){
+        const confirmed=await showConfirmModal({
+          title:"Initialize Game?",
+          message:"This will remove all players and clear all scores.",
+          confirmText:"INITIALIZE"
+        });
+        if(!confirmed)return;
         applyInitializeGameState();
       }
 
-      function resetGame(){
-        if(!confirm("Reset all scores and start a new game?"))return;
+      async function resetGame(){
+        const confirmed=await showConfirmModal({
+          title:"Reset Game?",
+          message:"Reset all scores and start again with the current players?",
+          confirmText:"RESET SCORES"
+        });
+        if(!confirmed)return;
         clearScoreInputs();
         state.players=state.players.map(p=>({...p,scores:[]}));
         els.leadMessage.textContent="Scores cleared. Enter Round 1.";
@@ -2370,6 +2511,18 @@ const winners=eligibleWinners.filter(p=>total(p)===highestWinningScore);
       applyInitializeGameState();
     })();
 </script>
+
+  <div id="confirmModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
+    <div class="confirm-card">
+      <div id="confirmHeading" class="confirm-heading">Confirm Action</div>
+      <div id="confirmMessage" class="confirm-message"></div>
+      <div class="confirm-actions">
+        <button id="confirmCancel" class="confirm-cancel" type="button">CANCEL</button>
+        <button id="confirmAccept" class="confirm-accept" type="button">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
 
