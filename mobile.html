@@ -292,13 +292,18 @@
 
     .swipe-player-row{
       position:relative;
+      isolation:isolate;
       touch-action:pan-y;
+      -webkit-user-select:none;
+      user-select:none;
       overflow:hidden;
       border-bottom:1px solid #ded6c8;
     }
     .swipe-delete-background{
       position:absolute;
       inset:0;
+      z-index:0;
+      pointer-events:none;
       display:flex;
       align-items:center;
       justify-content:flex-end;
@@ -310,9 +315,33 @@
       letter-spacing:.04em;
       text-transform:uppercase;
     }
+
+    .swipe-delete-action{
+      width:112px;
+      height:100%;
+      border:0;
+      border-radius:0;
+      color:white;
+      background:transparent;
+      box-shadow:none;
+      font:inherit;
+      font-size:.95rem;
+      font-weight:1000;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      pointer-events:auto;
+      touch-action:manipulation;
+    }
+    .swipe-delete-action:hover,
+    .swipe-delete-action:active{
+      transform:none;
+      filter:none;
+    }
+
     .swipe-player-row .score-input-row{
       position:relative;
       z-index:1;
+      pointer-events:auto;
       border-bottom:0;
       background:linear-gradient(180deg,#fffefb,#fff8e9);
       transform:translateX(0);
@@ -335,7 +364,13 @@
       color:var(--navy);
     }
 
-    .action-stack{display:grid;gap:4px;margin-top:14px}
+    .action-stack{
+      position:relative;
+      z-index:5;
+      display:grid;
+      gap:4px;
+      margin-top:14px;
+    }
     button{
       border:0;
       font:inherit;
@@ -364,6 +399,9 @@
       font-size:1.05rem;
     }
     .danger-btn{
+      position:relative;
+      z-index:10;
+      touch-action:manipulation;
       padding:10px;
       border-radius:12px;
       color:#a51e35;
@@ -372,6 +410,8 @@
     }
 
     .add-row{
+      position:relative;
+      z-index:5;
       display:grid;
       grid-template-columns:1fr auto;
       gap:8px;
@@ -1177,7 +1217,7 @@
 
 
 
-    /* v5.4.0.0: separate victory content and bottom action zones. */
+    /* v5.4.0.2: separate victory content and bottom action zones. */
     .victory-overlay.show{
       display:grid;
       grid-template-rows:minmax(0,1fr) auto;
@@ -1867,7 +1907,7 @@ RETURN TO SCOREBOARD</button>
 
         els.scoreInputs.innerHTML=state.players.map((p,i)=>`
           <div class="swipe-player-row" data-swipe-id="${p.id}">
-            <div class="swipe-delete-background" aria-hidden="true">Swipe to delete</div>
+            <div class="swipe-delete-background"><button class="swipe-delete-action" type="button" aria-label="Delete player">DELETE</button></div>
             <div class="score-input-row">
               <div class="score-player-wrap">
                 <button class="remove-player-btn" data-remove-id="${p.id}" type="button" tabindex="-1" aria-label="Remove ${esc(p.name)}">×</button>
@@ -1898,66 +1938,120 @@ RETURN TO SCOREBOARD</button>
       function setupSwipeToDelete(){
         if(!window.matchMedia("(max-width:560px)").matches)return;
 
+        let openShell=null;
+
+        const closeOpenRow=()=>{
+          if(!openShell)return;
+          const openRow=openShell.querySelector(".score-input-row");
+          openShell.classList.remove("delete-open","is-swiping");
+          if(openRow){
+            openRow.style.transition="transform .2s ease";
+            openRow.style.transform="translate3d(0,0,0)";
+          }
+          openShell=null;
+        };
+
+        document.addEventListener("touchstart",event=>{
+          if(openShell && !openShell.contains(event.target))closeOpenRow();
+        },{passive:true});
+
         els.scoreInputs.querySelectorAll(".swipe-player-row").forEach(shell=>{
           const row=shell.querySelector(".score-input-row");
           const playerId=Number(shell.dataset.swipeId);
+          const deleteAction=shell.querySelector(".swipe-delete-action");
           let startX=0;
           let startY=0;
           let currentX=0;
           let tracking=false;
           let horizontal=false;
 
-          const reset=()=>{
-            shell.classList.remove("is-swiping");
-            row.style.transform="translateX(0)";
-            tracking=false;
-            horizontal=false;
+          const setOffset=value=>{
+            currentX=Math.max(-112,Math.min(0,value));
+            row.style.transform=`translate3d(${currentX}px,0,0)`;
           };
 
-          shell.addEventListener("pointerdown",event=>{
-            if(event.pointerType==="mouse" || event.target.closest("input,button"))return;
-            startX=event.clientX;
-            startY=event.clientY;
-            currentX=0;
+          const begin=(x,y)=>{
+            if(openShell && openShell!==shell)closeOpenRow();
+            startX=x;
+            startY=y;
+            currentX=shell.classList.contains("delete-open")?-112:0;
             tracking=true;
             horizontal=false;
+            row.style.transition="none";
             shell.classList.add("is-swiping");
-            shell.setPointerCapture?.(event.pointerId);
-          });
+          };
 
-          shell.addEventListener("pointermove",event=>{
+          const move=(x,y,event)=>{
             if(!tracking)return;
-            const dx=event.clientX-startX;
-            const dy=event.clientY-startY;
+            const dx=x-startX;
+            const dy=y-startY;
 
             if(!horizontal){
-              if(Math.abs(dx)<8 && Math.abs(dy)<8)return;
+              if(Math.abs(dx)<7 && Math.abs(dy)<7)return;
               if(Math.abs(dy)>Math.abs(dx)){
-                reset();
+                tracking=false;
+                shell.classList.remove("is-swiping");
                 return;
               }
               horizontal=true;
             }
 
-            currentX=Math.max(-150,Math.min(0,dx));
-            row.style.transform=`translateX(${currentX}px)`;
-            if(horizontal)event.preventDefault();
-          });
+            const base=shell.classList.contains("delete-open")?-112:0;
+            setOffset(base+dx);
+            event?.preventDefault?.();
+          };
 
-          shell.addEventListener("pointerup",event=>{
+          const finish=()=>{
             if(!tracking)return;
-            shell.releasePointerCapture?.(event.pointerId);
+            tracking=false;
+            horizontal=false;
             shell.classList.remove("is-swiping");
+            row.style.transition="transform .2s ease";
 
-            if(currentX<=-95){
-              row.style.transform="translateX(-100%)";
-              setTimeout(()=>removePlayer(playerId),120);
+            if(currentX<=-56){
+              shell.classList.add("delete-open");
+              setOffset(-112);
+              openShell=shell;
             }else{
-              reset();
+              shell.classList.remove("delete-open");
+              setOffset(0);
+              if(openShell===shell)openShell=null;
             }
-          });
+          };
 
-          shell.addEventListener("pointercancel",reset);
+          shell.addEventListener("touchstart",event=>{
+            if(event.touches.length!==1)return;
+            const touch=event.touches[0];
+            begin(touch.clientX,touch.clientY);
+          },{passive:true});
+
+          shell.addEventListener("touchmove",event=>{
+            if(event.touches.length!==1)return;
+            const touch=event.touches[0];
+            move(touch.clientX,touch.clientY,event);
+          },{passive:false});
+
+          shell.addEventListener("touchend",finish,{passive:true});
+          shell.addEventListener("touchcancel",finish,{passive:true});
+
+          deleteAction?.addEventListener("click",event=>{
+            event.preventDefault();
+            event.stopPropagation();
+
+            const player=state.players.find(p=>p.id===playerId);
+            if(!player)return;
+
+            const confirmed=confirm(`Remove ${player.name} from the game? Their score history will be deleted.`);
+            if(!confirmed){
+              closeOpenRow();
+              return;
+            }
+
+            state.players=state.players.filter(p=>p.id!==playerId);
+            els.leadMessage.textContent=`${player.name} was removed from the game.`;
+            openShell=null;
+            render();
+          });
         });
       }
 
