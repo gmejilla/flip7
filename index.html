@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flip 7 Interactive Leaderboard v3.0.9</title>
+  <title>Flip 7 Interactive Leaderboard v3.1.8</title>
   <style>
     :root {
       --navy:#17154b;
@@ -1419,7 +1419,7 @@
 
 
 /* =========================================================
-   FLIP 7 LEADERBOARD v3.0.9 — UI POLISH SYSTEM
+   FLIP 7 LEADERBOARD v3.1.8 — UI POLISH SYSTEM
    ========================================================= */
 :root{
   --flip-navy:#16124d;
@@ -1772,7 +1772,7 @@ tbody tr:nth-child(even){
 
 
 /* =========================================================
-   FLIP 7 LEADERBOARD v3.0.9
+   FLIP 7 LEADERBOARD v3.1.8
    Expand Current Standings vertically and prevent clipping
    ========================================================= */
 
@@ -1855,7 +1855,7 @@ main,
 }
 
 
-/* v3.0.9 — restore 0–200 rainbow score progress */
+/* v3.1.8 — restore 0–200 rainbow score progress */
 .progress-track{
   height:20px !important;
   border-radius:999px !important;
@@ -1883,7 +1883,7 @@ main,
 
 
 /* =========================================================
-   FLIP 7 LEADERBOARD v3.0.9
+   FLIP 7 LEADERBOARD v3.1.8
    Clean progress meter and simplified standings styling
    ========================================================= */
 
@@ -1977,7 +1977,7 @@ main,
 
 
 /* =========================================================
-   FLIP 7 LEADERBOARD v3.0.9
+   FLIP 7 LEADERBOARD v3.1.8
    Rounded banner treatment
    ========================================================= */
 
@@ -2083,7 +2083,7 @@ main,
 
 
 /* =========================================================
-   FLIP 7 LEADERBOARD v3.0.9
+   FLIP 7 LEADERBOARD v3.1.8
    Exact rounded banner correction
    ========================================================= */
 
@@ -2125,7 +2125,7 @@ main,
 }
 
 
-/* v3.0.9 remove only outer standings border */
+/* v3.1.8 remove only outer standings border */
 #standings{
   border:none !important;
   box-shadow:none !important;
@@ -2133,13 +2133,68 @@ main,
 }
 
 
-/* v3.0.9 remove outer standings border and background/gradient */
+/* v3.1.8 remove outer standings border and background/gradient */
 #standings{
   border:none !important;
   outline:none !important;
   box-shadow:none !important;
   background:none !important;
   background-image:none !important;
+}
+
+
+/* v3.1.8 exact INITIALIZE GAME styling match */
+#initializeGameBtn{
+  background:linear-gradient(180deg,#ffffff 0%,#ffd9e7 100%) !important;
+  color:#b20d47 !important;
+  border:2px solid #ef7fa7 !important;
+  box-shadow:0 5px 0 #9e3660 !important;
+  font-weight:900 !important;
+}
+#initializeGameBtn:not(:disabled){
+  animation:readyPulse 2.2s ease-in-out infinite !important;
+}
+#initializeGameBtn:disabled{
+  animation:none !important;
+  filter:saturate(.55) !important;
+  opacity:.72 !important;
+}
+
+
+/* v3.1.8: INITIALIZE GAME uses only the exact .save-btn appearance */
+#initializeGameBtn,
+#initializeGameBtn:hover,
+#initializeGameBtn:active,
+#initializeGameBtn:not(:disabled),
+#initializeGameBtn:disabled {
+  background: unset !important;
+  color: unset !important;
+  border: unset !important;
+  box-shadow: unset !important;
+  animation: unset !important;
+  filter: unset !important;
+  opacity: unset !important;
+  letter-spacing: unset !important;
+}
+
+/* Reapply the exact .save-btn visual rules after removing ID-specific overrides. */
+#initializeGameBtn.save-btn {
+  border-radius: 14px !important;
+  padding: 15px !important;
+  color: white !important;
+  font-size: 1.35rem !important;
+  background: linear-gradient(180deg,#ff276f,#e70754) !important;
+  box-shadow: 0 5px 0 #930039 !important;
+  border: 2px solid #a60043 !important;
+  font-weight: 1000 !important;
+}
+
+#initializeGameBtn.save-btn:disabled {
+  opacity: .42 !important;
+  filter: grayscale(.75) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 </style>
@@ -2260,7 +2315,7 @@ RETURN TO SCOREBOARD</button>
     <section class="main-grid">
       <aside class="panel">
         <div class="section-ribbon">★ Enter Scores ★</div>
-        <div class="round-banner">Round <span id="entryRound">1</span></div>
+        <div class="round-banner">ROUND <span id="entryRound">1</span></div>
         <div id="scoreInputs" class="score-input-list">
           <div class="empty-game-state">
             <div class="empty-game-icon">➕</div>
@@ -2285,7 +2340,7 @@ RETURN TO SCOREBOARD</button>
         </div>
 
         <div class="action-stack">
-          <button id="resetBtn" class="danger-btn" type="button">RESET GAME</button>
+          <button id="resetBtn" class="save-btn" type="button">RESET GAME</button>
         </div>
       </aside>
 
@@ -2321,7 +2376,7 @@ RETURN TO SCOREBOARD</button>
     <div class="footer-strip">★ Press Your Luck. Race to 200! ★</div>
 
     <section class="initialize-game-section">
-      <button id="initializeGameBtn" class="danger-btn initialize-game-btn" type="button">
+      <button id="initializeGameBtn" class="save-btn" type="button">
         INITIALIZE GAME
       </button>
     </section>
@@ -3460,7 +3515,6 @@ const winners=eligibleWinners.filter(p=>total(p)===highestWinningScore);
     document.querySelectorAll('button').forEach(btn => {
       const t = (btn.textContent || '').trim().toUpperCase();
       if (t.includes('SAVE ROUND')) btn.classList.add('save-round');
-      if (t.includes('INITIALIZE GAME')) btn.classList.add('initialize-button');
     });
 
     document.querySelectorAll('[class*="standing"], [id*="standing"]').forEach(el => {
