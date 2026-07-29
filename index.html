@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flip 7 Interactive Leaderboard v1.1.1</title>
+  <title>Flip 7 Interactive Leaderboard v2.0.2</title>
   <style>
     :root {
       --navy:#17154b;
@@ -822,30 +822,7 @@
       font-size:.95rem;
       font-weight:1000;
     }
-    .chance-wrap{
-      margin-top:7px;
-      display:grid;
-      grid-template-columns:auto minmax(50px,1fr) auto;
-      gap:7px;
-      align-items:center;
-      font-size:.72rem;
-      font-weight:1000;
-      color:currentColor;
-    }
-    .chance-track{
-      height:7px;
-      overflow:hidden;
-      border-radius:999px;
-      background:rgba(23,21,75,.12);
-    }
-    .chance-fill{
-      height:100%;
-      border-radius:inherit;
-      background:currentColor;
-      transition:width .5s ease;
-    }
-
-    /* Centered victory content with fireworks behind it. */
+/* Centered victory content with fireworks behind it. */
     .victory-overlay{
       align-items:center;
       justify-items:center;
@@ -1554,7 +1531,7 @@ RETURN TO SCOREBOARD</button>
     <section class="main-grid">
       <aside class="panel">
         <div class="section-ribbon">★ Enter Scores ★</div>
-        <div class="round-banner">ROUND <span id="entryRound">1</span></div>
+        <div class="round-banner">ROUND <span id="entryRound">1</span> SCORES</div>
         <div id="scoreInputs" class="score-input-list">
           <div class="empty-game-state">
             <div class="empty-game-icon">➕</div>
@@ -2302,21 +2279,6 @@ RETURN TO SCOREBOARD</button>
         },{passive:true});
       }
 
-      function estimatedWinChances(players){
-        if(!players.length)return new Map();
-        const weights=players.map(player=>{
-          const score=total(player);
-          if(score>=WINNING_SCORE)return 1000000;
-          const remaining=Math.max(0,WINNING_SCORE-score);
-          return 1/Math.pow(remaining+20,1.22);
-        });
-        const sum=weights.reduce((a,b)=>a+b,0)||1;
-        return new Map(players.map((player,index)=>[
-          player.id,
-          Math.max(1,Math.round(weights[index]/sum*100))
-        ]));
-      }
-
       function renderStandings(animate=false){
         const r=ranked();
 
@@ -2335,7 +2297,6 @@ RETURN TO SCOREBOARD</button>
         const hi=total(r[0]);
         const lo=r.length?total(r[r.length-1]):0;
         const leaders=r.filter(p=>total(p)===hi);
-        const chances=estimatedWinChances(r);
 
         els.leaderMetric.textContent=leaders.length===1?leaders[0].name.toUpperCase():"TIED";
         els.leaderPoints.textContent=`${hi} PTS`;
@@ -2348,7 +2309,6 @@ RETURN TO SCOREBOARD</button>
           const isLast=score===lo&&r.length>1;
           const won=score>=WINNING_SCORE&&score===hi;
           const color=COLORS[index%COLORS.length];
-          const chance=chances.get(p.id)||1;
           // Stable per-player offsets keep the color effects out of sync without
           // changing every time the standings re-render.
           const animationDelay=-(((p.id*137)%320)/100);
@@ -2368,11 +2328,6 @@ RETURN TO SCOREBOARD</button>
                 <div class="progress-track"><div class="progress-bar" style="width:${progress}%"></div></div>
                 <div class="progress-label print-hide">
                   ${won?`<span class="winner-pill">WINNER!</span> ${score-WINNING_SCORE}+ POINTS OVER 200!`:`${remaining} POINTS TO WIN`}
-                </div>
-                <div class="chance-wrap print-hide" title="A simple race-position estimate based on each player's points remaining">
-                  <span>EST. WIN CHANCE</span>
-                  <div class="chance-track"><div class="chance-fill" style="width:${chance}%"></div></div>
-                  <strong>${chance}%</strong>
                 </div>
               </div>
             </article>`;
