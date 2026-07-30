@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flip 7 Interactive Leaderboard v4.0.6</title>
+  <title>Flip 7 Interactive Leaderboard v4.0.7</title>
   <style>
     :root {
       --navy:#17154b;
@@ -441,7 +441,7 @@
     .standing-row{
       position:relative;
       display:grid;
-      grid-template-columns:60px minmax(190px,1.45fr) 135px minmax(340px,2.8fr);
+      grid-template-columns:72px minmax(220px,1.7fr) 170px minmax(260px,2fr);
       align-items:center;
       min-height:82px;
       border:2px solid currentColor;
@@ -689,7 +689,7 @@
     .standing-row{
       position:relative;
       display:grid;
-      grid-template-columns:60px minmax(190px,1.45fr) 135px minmax(340px,2.8fr);
+      grid-template-columns:72px minmax(220px,1.7fr) 170px minmax(260px,2fr);
       align-items:center;
       width:100%;
       min-width:0;
@@ -958,7 +958,7 @@
     @media(max-width:1200px){
       .topbar{grid-template-columns:350px 1fr 210px}
       .main-grid{grid-template-columns:350px 1fr}
-      .standing-row{grid-template-columns:60px minmax(150px,1.25fr) 120px minmax(300px,2.4fr)}
+      .standing-row{grid-template-columns:72px minmax(160px,1.4fr) 135px minmax(220px,1.7fr)}
       .standing-name{font-size:1.55rem}
       .total-cell{font-size:2rem}
     }
@@ -966,7 +966,7 @@
       .topbar{grid-template-columns:1fr 1fr}
       .brand-box{grid-column:1/-1;min-height:145px}
       .main-grid{grid-template-columns:1fr}
-      .standing-row{grid-template-columns:52px minmax(0,1fr) 96px}
+      .standing-row{grid-template-columns:60px minmax(0,1fr) 110px}
       .progress-cell{grid-column:1/-1;border-top:1px solid #ccc4d4}
     }
     @media(max-width:560px){
@@ -1067,6 +1067,8 @@
       color:#29263b;
       text-align:center;
       line-height:1.55;
+    
+      font-weight:700;
     }
     .confirm-warning{
       display:block;
@@ -2320,7 +2322,7 @@ main,
 
 
 
-/* v4.0.5 — remove TO 200 and redistribute scoreboard columns */
+/* v4.0.7 — remove TO 200 and redistribute scoreboard columns */
 .history-panel .table-wrap{
   width:100%;
 }
