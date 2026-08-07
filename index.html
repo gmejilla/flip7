@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flip 7 Interactive Leaderboard v4.1.4b</title>
+  <title>Flip 7 Interactive Leaderboard v4.1.4c</title>
   <style>
     :root {
       --navy:#17154b;
@@ -2565,7 +2565,7 @@ button,.outcome-btn,.sound-box{-webkit-tap-highlight-color:transparent;}
 }
 
 
-/* v4.1.4b text color update */
+/* v4.1.4c text color update */
 .empty-game-copy,
 .instructions,
 .instructions p{
@@ -2573,7 +2573,7 @@ button,.outcome-btn,.sound-box{-webkit-tap-highlight-color:transparent;}
 }
 
 
-/* v4.1.4b hide instructional helper text */
+/* v4.1.4c hide instructional helper text */
 .empty-game-copy,
 .instructions,
 .instructions p{
@@ -3466,7 +3466,7 @@ RETURN TO SCOREBOARD</button>
                 <div class="progress-track"><div class="progress-bar" style="width:${progress}%"></div></div>
                 <div class="progress-label print-hide">
                   <span class="progress-score">${Math.min(score,WINNING_SCORE)} / ${WINNING_SCORE}</span>
-                  <span class="progress-remaining">${won?`<span class="winner-pill">WINNER!</span> ${score-WINNING_SCORE}+ POINTS OVER 200!`:`${remaining} POINTS TO WIN`}</span>
+                  <span class="progress-remaining">${won?`<span class="winner-pill">WINNER!</span> ${score-WINNING_SCORE}+ POINTS OVER 200!`:`${remaining} ${remaining === 1 ? "POINT" : "POINTS"} TO WIN`}</span>
                 </div>
               </div>
             </article>`;
